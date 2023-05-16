@@ -1,4 +1,10 @@
 {
+  "scripts": {
+    "build": "",
+    "serve": "npm run build && firebase emulators:start",
+    "start": "npm run shell",
+    "deploy": "firebase deploy"
+  },
   "dependencies": {
     "papaparse": "^5.4.1"
   }
