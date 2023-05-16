@@ -7,14 +7,14 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-import { onRequest } from "firebase-functions/v2/https";
+import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import { onObjectFinalized } from "firebase-functions/v2/storage";
+import {onObjectFinalized} from "firebase-functions/v2/storage";
 import * as path from "path";
 import * as os from "os";
 import * as fs from "fs";
-const admin = require("firebase-admin");
-const Papa = require("papaparse"); // CSV parser
+import admin = require("firebase-admin");
+import * as Papa from "papaparse";
 
 // The Firebase Admin SDK to access Firestore.
 admin.initializeApp();
@@ -23,15 +23,16 @@ admin.initializeApp();
 // https://firebase.google.com/docs/functions/typescript
 
 export const helloWorld = onRequest((request, response) => {
-  logger.info("Hello logs!", { structuredData: true });
+  logger.info("Hello logs!", {structuredData: true});
   response.send("Hello from Firebase!");
 });
 
 exports.importCSVToFirestore = onObjectFinalized(async (event) => {
-  const fileBucket = event.data.bucket; // The Storage bucket that contains the file.
-  const filePath = event.data.name; // File path in the bucket.
-  const contentType = event.data.contentType; // File content type.
-  const metageneration = event.data.metageneration; // Number of times metadata has been generated. New objects have a value of 1.
+  const fileBucket = event.data.bucket;
+  const filePath = event.data.name;
+  const contentType = event.data.contentType;
+  // Number of times metadata has been generated. New objects have a value of 1.
+  const metageneration = event.data.metageneration;
 
   // Exit if this is triggered on a file that is not a csv file.
   if (!contentType || !contentType.startsWith("text/csv")) {
@@ -52,7 +53,7 @@ exports.importCSVToFirestore = onObjectFinalized(async (event) => {
   // Download file from bucket to a temporary path
   const bucket = admin.storage().bucket(fileBucket);
   const tempFilePath = path.join(os.tmpdir(), fileName);
-  await bucket.file(filePath).download({ destination: tempFilePath });
+  await bucket.file(filePath).download({destination: tempFilePath});
   logger.info("File downloaded locally to", tempFilePath);
 
   importCsv(tempFilePath);
@@ -64,6 +65,10 @@ exports.importCSVToFirestore = onObjectFinalized(async (event) => {
   return null;
 });
 
+/**
+ * Imports a CSV file into Firestore.
+ * @param {string} file The path to the CSV file.
+ */
 async function importCsv(file: string) {
   // Parse the CSV file.
   // const csvData = fs.readFileSync(tempFilePath, 'utf8');
@@ -71,7 +76,7 @@ async function importCsv(file: string) {
   Papa.parse(file, {
     header: true,
     preview: 5,
-    step: function (row: { data: any }) {
+    step: function(row: { data: any }) {
       console.log("Row:", row.data);
     },
   });
